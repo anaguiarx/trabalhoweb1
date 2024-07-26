@@ -37,17 +37,23 @@ function loadUserAvatarData($conn, $userId) {
 
 // Processa o formulário de salvamento
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['logout'])) {
+        session_unset();
+        session_destroy();
+        redirect('index.php'); 
+        exit();
+    }
+
     $conn = dbConnect();
     $doctor_id = $_POST['doctor_id'];
     $feeling = $_POST['feeling'];
 
-    // Aqui você pode salvar esses dados em uma tabela específica, por exemplo:
-    // $stmt = $conn->prepare('INSERT INTO user_feedback (user_id, doctor_id, feeling) VALUES (?, ?, ?)');
-    // $stmt->bind_param('iis', $_SESSION['user_id'], $doctor_id, $feeling);
-    // $stmt->execute();
+    $stmt = $conn->prepare('INSERT INTO user_in_doctor (user_id, doctor_id, feeling) VALUES (?, ?, ?)');
+    $stmt->bind_param('iis', $_SESSION['user_id'], $doctor_id, $feeling);
+    $stmt->execute();
 
     $_SESSION['message'] = 'Dados salvos com sucesso!';
-    redirect('dashboard.php'); // Redireciona após salvar
+    redirect('feedback.php'); // Redireciona após salvar
     exit();
 }
 
@@ -65,6 +71,9 @@ $userAvatarData = loadUserAvatarData($conn, $_SESSION['user_id']);
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <form action="dashboard.php" method="post" style="display: inline;">
+        <button type="submit" name="logout" class="logout-button">Sair</button>
+    </form>
     <div id="dashboard" class="section">
         <?php if (isset($_SESSION['message'])): ?>
             <div class="message"><?php echo htmlspecialchars($_SESSION['message']); ?></div>
@@ -84,11 +93,11 @@ $userAvatarData = loadUserAvatarData($conn, $_SESSION['user_id']);
             <div id="feelings-options">
                 <label>
                     <input type="radio" name="feeling" value="crying" id="feeling-crying-option">
-                    <img id="feeling-crying" class="feeling-avatar" alt="Chorando" src="">
+                    <img id="feeling-crying" class="feeling-avatar" value="Chorando" alt="Chorando" src="">
                 </label>
                 <label>
                     <input type="radio" name="feeling" value="smiling" id="feeling-smiling-option">
-                    <img id="feeling-smiling" class="feeling-avatar" alt="Sorrindo" src="">
+                    <img id="feeling-smiling" class="feeling-avatar" value="Sorrindo" alt="Sorrindo" src="">
                 </label>
             </div>
             <button type="submit">Salvar</button>
